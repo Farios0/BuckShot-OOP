@@ -12,14 +12,15 @@ hide empty members
 
 package "Model Layer" {
     interface Model {
-        + Shoot (boolean toDealer) : void
+        + Shoot (boolean toDealer) : int
         + gameIsOver() : boolean
-        + utilizeObject(SpecialObject) : void
-        + getSnapShot() : GameState
+        + utilizeObject(SpecialObject) : boolean
+        + isPlayerTurn() : boolean
+        + distributeObjects() : Pair<List<SpecialObject>, List<SpecialObject>>
     }
   
     class ModelImpl {
-        + distributeObjects() : void
+        
         + getGameData() : GameState
         - dealer : Partecipant
         - player : Partecipant
@@ -45,7 +46,7 @@ package "Model Layer" {
     }
 
     class TurnManager {
-      + endTurn() : void
+      + endTurn(blank : boolean, selfShot : boolean) : void
       + isPlayerTurn() : boolean
     }
     
@@ -86,9 +87,13 @@ package "Model Layer" {
         + skip() : void
     }
 
-    Class AIStrategy {
-       + getObjectsChosen() List<SpecialObjects>
-       + ShootToPlayer() : boolean
+    Interface AIStrategy {
+        + getObjectsChosen() : List<SpecialObjects>
+        + ShootToPlayer() : boolean
+    }
+
+    class BasicStrategy {
+
     }
     
     class GameState {
@@ -133,9 +138,8 @@ package "View" {
   }
 }
 
-ModelImpl *-- Dealer : contains
-ModelImpl *-- Player : contains
-SpecialObject *-- AbstractPartecipant : owns
+ModelImpl *-- Partecipant : contains 2
+SpecialObject *-- AbstractPartecipant : owns multiple
 LivesManager *-- AbstractPartecipant
 Controller --> Model : controls
 GUI --> Controller : uses
@@ -148,5 +152,6 @@ Handcuffs ..|> SpecialObject
 Cigarette ..|> SpecialObject
 MagnifyingGlass ..|> SpecialObject
 Saw ..|> SpecialObject
+BasicStrategy ..|> AIStrategy
 
 @enduml
