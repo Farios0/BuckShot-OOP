@@ -118,6 +118,7 @@ package "Model Layer" {
 }
 package "Controller" {
   class Controller {
+    - view : GUI
     - model : Model
     + handleInput()
     + updateView()
@@ -139,7 +140,9 @@ LivesManager *-- AbstractPartecipant
 Controller --> Model : controls
 GUI --> Controller : uses
 Controller --> GUI : updates
-ModelImpl *--up Shotgun : contains
+Shotgun *--down ModelImpl : contains
+AIStrategy *-- ModelImpl : contains
+TurnManager *-- ModelImpl : contains
 Beer ..|> SpecialObject
 Handcuffs ..|> SpecialObject
 Cigarette ..|> SpecialObject
