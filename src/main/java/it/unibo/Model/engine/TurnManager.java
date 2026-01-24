@@ -7,7 +7,7 @@ public class TurnManager {
     }
     private Turn currentTurn;
 
-    TurnManager() {
+    public TurnManager() {
         currentTurn = Turn.PLAYER;
     }
 
