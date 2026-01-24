@@ -20,10 +20,12 @@ package "Model Layer" {
   
     class ModelImpl {
         + distributeObjects() : void
+        + getGameData() : GameState
         - dealer : Partecipant
         - player : Partecipant
         - strategy : AIStrategy
         - shotgun : Shotgun
+        - turnManager : TurnManager
     }
   
     ModelImpl ..|> Model : implements
@@ -85,7 +87,8 @@ package "Model Layer" {
     }
 
     Class AIStrategy {
-
+       + getObjectsChosen() List<SpecialObjects>
+       + ShootToPlayer() : boolean
     }
     
     class GameState {
