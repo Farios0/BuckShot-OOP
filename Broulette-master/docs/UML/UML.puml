@@ -1,0 +1,146 @@
+@startuml Buckshot Roulette
+title Buckshot Roulette
+skinparam {
+  ClassBackgroundColor White
+  ClassBorderColor Black
+  FontSize 12
+  TitleFontSize 14
+  TitleFontStyle bold
+}
+
+hide empty members
+
+package "Model Layer" {
+    interface Model {
+        + Shoot (boolean toDealer) : void
+        + gameIsOver() : boolean
+        + utilizeObject(SpecialObject) : void
+        + getSnapShot() : GameState
+    }
+  
+    class ModelImpl {
+        + distributeObjects() : void
+        - dealer : Partecipant
+        - player : Partecipant
+        - strategy : AIStrategy
+        - shotgun : Shotgun
+    }
+  
+    ModelImpl ..|> Model : implements
+
+
+
+    interface Partecipant {
+        + addObjects(List<SpecialObject>) : void
+        + useObject(SpecialObject) : boolean
+        + shoot(Shotgun s, Partecipant target) : int
+        + isDead() : boolean
+    }
+
+    abstract class AbstractPartecipant  {
+        - objects : List<SpecialObject>
+        - lives : LivesManager 
+    }
+
+    class TurnManager {
+      + endTurn() : void
+      + isPlayerTurn() : boolean
+    }
+    
+    class Dealer {
+        
+    }
+    
+    class Player {
+        
+    }
+    
+    AbstractPartecipant <|-- Dealer : extends
+    AbstractPartecipant <|-- Player : extends
+    Partecipant <|.. AbstractPartecipant
+
+    interface SpecialObject {
+    + use() : void
+    }
+
+    class LivesManager {
+        - maxLives : int
+        - initialLives : int
+        + noLivesRemaining() : boolean
+        + smoke() : void
+        + IAmHit(int damage) : void
+    }
+
+    class Shotgun {
+        - bullets : List<Boolean>
+        + isEmpty() : boolean
+        + recharge() : void
+        + isBulletAlive() : boolean
+        + shoot() : boolean
+        + cut() : void
+        + isCutted() : boolean
+        + getDamage() : int
+        + howManyRemaining() : int
+        + skip() : void
+    }
+
+    Class AIStrategy {
+
+    }
+    
+    class GameState {
+        - shotgun : ShotgunState
+        - objects : list<SpecialObjects>
+    }
+
+    class Beer {
+
+    }
+
+    class Cigarette {
+
+    }
+
+    class Saw {
+
+    }
+
+    class Handcuffs {
+
+    }
+
+    class MagnifyingGlass {
+
+    }
+}
+package "Controller" {
+  class Controller {
+    - model : Model
+    + handleInput()
+    + updateView()
+  }
+}  
+
+package "View" {
+  class GUI {
+    - controller : Controller
+    + display()
+    + getUserInput()
+  }
+}
+
+ModelImpl *-- Dealer : contains
+ModelImpl *-- Player : contains
+SpecialObject *-- AbstractPartecipant : owns
+LivesManager *-- AbstractPartecipant
+Controller --> Model : controls
+GUI --> Controller : uses
+Controller --> GUI : updates
+ModelImpl *--up Shotgun : contains
+Beer ..|> SpecialObject
+Handcuffs ..|> SpecialObject
+Cigarette ..|> SpecialObject
+MagnifyingGlass ..|> SpecialObject
+Saw ..|> SpecialObject
+
+@enduml
