@@ -1,5 +1,5 @@
 @startuml Buckshot Roulette
-title Buckshot Roulette
+title Buckshot Roulette (MVC passive view)
 skinparam {
   ClassBackgroundColor White
   ClassBorderColor Black
@@ -16,12 +16,11 @@ package "Model Layer" {
         + gameIsOver() : boolean
         + utilizeObject(SpecialObject) : boolean
         + isPlayerTurn() : boolean
-        + distributeObjects() : Pair<List<SpecialObject>, List<SpecialObject>>
+        + getGameData() : GameState
     }
   
     class ModelImpl {
-        
-        + getGameData() : GameState
+        + distributeObjects() : Pair<List<SpecialObject>, List<SpecialObject>>
         - dealer : Partecipant
         - player : Partecipant
         - strategy : AIStrategy
@@ -98,6 +97,8 @@ package "Model Layer" {
     
     class GameState {
         - shotgun : ShotgunState
+        - dealer : DealerState
+        - player : PlayerState
         - objects : list<SpecialObjects>
     }
 
