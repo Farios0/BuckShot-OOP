@@ -5,6 +5,9 @@
 build/
 bin/
 
+docs/documentation/*
+!docs/documentation/Documentation.tex
+
 # Ignore Idea customizations
 .idea
 
