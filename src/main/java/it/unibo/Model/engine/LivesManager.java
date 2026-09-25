@@ -15,15 +15,15 @@ public class LivesManager {
         return currentLives <= 0;
     }
 
-    public void smoke() {
+    public void heal() {
         if (currentLives + 1 <= maxLives) {
             currentLives++;
         }
     }
 
-    public void IAmHit(boolean shotgunIsCutted) {
+    public void takeDamage(boolean shotgunIsCutted) {
         if (shotgunIsCutted) {
-            currentLives = currentLives - 2;
+            currentLives -= 2;
         } else {
             currentLives--;
         }

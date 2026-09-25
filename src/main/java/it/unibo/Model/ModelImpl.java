@@ -6,7 +6,7 @@ import it.unibo.Model.engine.Shotgun;
 import it.unibo.Model.engine.ShotgunImpl;
 import it.unibo.Model.engine.TurnManager;
 import it.unibo.Model.entities.Character;
-import it.unibo.Model.items.SpecialObject;
+import it.unibo.Model.items.SpecialItem;
 
 public class ModelImpl implements Model {
     private final Character dealer;
@@ -27,7 +27,7 @@ public class ModelImpl implements Model {
     }
 
     @Override
-    public boolean utilizeObject(SpecialObject obj) {
+    public boolean utilizeObject(SpecialItem obj) {
         if (turnManager.isPlayerTurn())
             return player.useObject(obj);
         return dealer.useObject(obj);
@@ -39,7 +39,7 @@ public class ModelImpl implements Model {
     }
 
     @Override
-    public List<SpecialObject> distributeObjects() {
+    public List<SpecialItem> distributeObjects() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'distributeObjects'");
     }

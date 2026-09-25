@@ -3,12 +3,12 @@ package it.unibo.Model;
 import java.util.List;
 
 import it.unibo.Model.entities.Character;
-import it.unibo.Model.items.SpecialObject;
+import it.unibo.Model.items.SpecialItem;
 
 public interface Model {
     int shoot(Character target);
-    boolean utilizeObject(SpecialObject obj);
+    boolean utilizeObject(SpecialItem obj);
     boolean gameIsOver();
-    List<SpecialObject> distributeObjects();
+    List<SpecialItem> distributeObjects();
     boolean isPlayerTurn();
 } 
