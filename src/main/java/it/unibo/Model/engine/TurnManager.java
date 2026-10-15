@@ -1,28 +1,19 @@
 package it.unibo.Model.engine;
 
 public class TurnManager {
-    private enum Turn {
-        PLAYER,
-        DEALER;
-    }
-    private Turn currentTurn;
+    private boolean playerTurn = true;
 
-    public TurnManager() {
-        currentTurn = Turn.PLAYER;
-    }
-
-    public void endTurn(boolean blank, boolean selfShot) {
-        if (currentTurn.equals(Turn.PLAYER)) {
-            if (blank && selfShot) {
-                return;
-            }
-            currentTurn = Turn.DEALER;
-            return;
+    public void endTurn(final boolean blank, final boolean selfShot, final boolean opponentRestrained) {
+        if (!(blank && selfShot) && !opponentRestrained) {
+            playerTurn = !playerTurn;
         }
-        currentTurn = Turn.PLAYER;
+    }
+
+    public void endTurn(final boolean blank, final boolean selfShot) {
+        endTurn(blank, selfShot, false);
     }
 
     public boolean isPlayerTurn() {
-        return currentTurn.equals(Turn.PLAYER);
+        return playerTurn;
     }
 }

@@ -1,41 +1,51 @@
 package it.unibo.Model.engine;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
+import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
+import it.unibo.Model.State.ShotgunState;
 
 public class ShotgunImpl implements Shotgun {
-    private final Queue<Boolean> bullets;
-    private final Random bulletsRandomizer;
-    private boolean cutted;
+    private final Queue<Boolean> bullets = new ArrayDeque<>();
+    private final Random random;
+    private boolean sawed;
 
     public ShotgunImpl() {
-        bulletsRandomizer = new Random();
-        bullets = new LinkedList<>();
-        setUpBullets(6);
+        this(new Random());
     }
 
-    private void setUpBullets(int howMany) {
-        for (int i = 0; i < howMany; i++) {
-            bullets.add(bulletsRandomizer.nextBoolean());
-        }
+    public ShotgunImpl(final Random random) {
+        this.random = Objects.requireNonNull(random);
+        recharge();
+    }
+
+    /** Creates a known load, useful for deterministic games and tests. */
+    public ShotgunImpl(final List<Boolean> load) {
+        random = new Random();
+        bullets.addAll(List.copyOf(load));
     }
 
     @Override
     public int getDamage() {
-        return isBulletAlive()? 
-        isCutted()? 2 : 1 
-        : 0;
+        return isBulletAlive() ? (sawed ? 2 : 1) : 0;
     }
 
     @Override
     public boolean isBulletAlive() {
+        if (isEmpty()) {
+            throw new IllegalStateException("The shotgun is empty");
+        }
         return bullets.element();
     }
 
     @Override
-    public boolean shoot() {
-        return bullets.remove();
+    public ShotResult shoot() {
+        final ShotResult result = new ShotResult(isBulletAlive(), getDamage());
+        bullets.remove();
+        sawed = false;
+        return result;
     }
 
     @Override
@@ -45,30 +55,42 @@ public class ShotgunImpl implements Shotgun {
 
     @Override
     public void skip() {
+        if (isEmpty()) {
+            throw new IllegalStateException("The shotgun is empty");
+        }
         bullets.remove();
     }
 
     @Override
     public void cut() {
-        cutted = true;
+        sawed = true;
     }
 
     @Override
-    public boolean isCutted() {
-        if (cutted) {
-            cutted = false;
-            return true;
-        }
-        return false;
+    public boolean isSawed() {
+        return sawed;
     }
 
     @Override
     public boolean isEmpty() {
-        return bullets.size() == 0;
+        return bullets.isEmpty();
+    }
+
+    /** Reloading is allowed only after all shells have been removed. */
+    @Override
+    public void recharge() {
+        if (!isEmpty()) {
+            throw new IllegalStateException("Cannot reload a loaded shotgun");
+        }
+        for (int i = 0; i < 6; i++) {
+            bullets.add(random.nextBoolean());
+        }
+        sawed = false;
     }
 
     @Override
-    public void recharge() {
-        setUpBullets(3);
+    public ShotgunState getState() {
+        final int live = (int) bullets.stream().filter(Boolean::booleanValue).count();
+        return new ShotgunState(live, bullets.size() - live, sawed);
     }
 }

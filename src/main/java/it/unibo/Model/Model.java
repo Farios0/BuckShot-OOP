@@ -1,14 +1,15 @@
 package it.unibo.Model;
 
-import java.util.List;
-
-import it.unibo.Model.entities.Character;
-import it.unibo.Model.items.SpecialItem;
+import it.unibo.Model.items.ItemType;
 
 public interface Model {
-    int shoot(Character target);
-    boolean utilizeObject(SpecialItem obj);
+    enum Target { SELF, OPPONENT }
+    int shoot(Target target);
+    boolean utilizeObject(ItemType item);
     boolean gameIsOver();
-    List<SpecialItem> distributeObjects();
+    void distributeObjects();
     boolean isPlayerTurn();
-} 
+    GameState getGameData();
+    boolean inspectNextShell();
+    int playDealerTurn();
+}

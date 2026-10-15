@@ -1,5 +1,5 @@
 @startuml Buckshot Roulette
-title Buckshot Roulette (MVC, passive view, pull + push compatible)
+title Buckshot Roulette (MVC, passive view, snapshot)
 skinparam {
     ClassBackgroundColor White
     ClassBorderColor Black
@@ -13,78 +13,84 @@ hide empty members
 package "Model Layer" {
 
     interface Model {
-        + shoot(toDealer : boolean) : int
+        + shoot(target : Target) : int
         + gameIsOver() : boolean
-        + useObject(SpecialObject) : boolean
+        + utilizeObject(ItemType) : boolean
         + isPlayerTurn() : boolean
         + getGameData() : GameState
+        + distributeObjects() : void
+        + inspectNextShell() : boolean
+        + playDealerTurn() : int
     }
 
     class ModelImpl {
-        - dealer : Participant
-        - player : Participant
+        - dealer : Character
+        - player : Character
         - strategy : AIStrategy
         - shotgun : Shotgun
         - turnManager : TurnManager
-        + distributeObjects() : Pair<List<SpecialObject>, List<SpecialObject>>
+        + distributeObjects() : void
+        + playDealerTurn() : int
+        + inspectNextShell() : boolean
     }
     ModelImpl ..|> Model : implements
 
-    interface Participant {
-        + addObjects(List<SpecialObject>) : void
-        + useObject(SpecialObject, opponent : Participant, Shotgun) : boolean
-        + shoot(Shotgun, target : Participant) : int
+    interface Character {
+        + addObjects(List<SpecialItem>) : void
+        + useObject(SpecialItem, opponent : Character, Shotgun) : boolean
+        + shoot(Shotgun, target : Character) : ShotResult
+        + heal() : void
+        + takeDamage(damage : int) : void
+        + restrain() : void
+        + consumeRestraint() : boolean
+        + getState() : CharacterState
         + isDead() : boolean
     }
 
-    abstract class AbstractParticipant {
-        - objects : List<SpecialObject>
+    abstract class AbstractCharacter {
+        - items : List<SpecialItem>
         - lives : LivesManager
     }
 
     class TurnManager {
-        + endTurn(blank : boolean, selfShot : boolean) : void
+        + endTurn(blank : boolean, selfShot : boolean, opponentRestrained : boolean) : void
         + isPlayerTurn() : boolean
     }
 
-    class Dealer {
+    class Participant {
     }
 
-    class Player {
-    }
+    AbstractCharacter <|-- Participant : extends
+    Character <|.. AbstractCharacter
 
-    AbstractParticipant <|-- Dealer : extends
-    AbstractParticipant <|-- Player : extends
-    Participant <|.. AbstractParticipant
-
-    interface SpecialObject {
-        + use(user : Participant, opponent : Participant, Shotgun) : void
+    interface SpecialItem {
+        + getType() : ItemType
+        + use(user : Character, opponent : Character, Shotgun) : boolean
     }
 
     class LivesManager {
         - maxLives : int
-        - initialLives : int
+        - currentLives : int
         + noLivesRemaining() : boolean
         + heal() : void
         + takeDamage(damage : int) : void
     }
 
-    class Shotgun {
-        - bullets : List<Boolean>
+    interface Shotgun {
         + isEmpty() : boolean
         + recharge() : void
         + isBulletAlive() : boolean
-        + shoot() : boolean
+        + shoot() : ShotResult
         + cut() : void
         + isSawed() : boolean
         + getDamage() : int
         + howManyRemaining() : int
         + skip() : void
+        + getState() : ShotgunState
     }
 
     interface AIStrategy {
-        + getObjectsChosen() : List<SpecialObject>
-        + shootToPlayer() : boolean
+        + chooseTarget(GameState) : Target
     }
 
     class BasicStrategy {
@@ -92,9 +98,10 @@ package "Model Layer" {
 
     class GameState {
         - shotgun : ShotgunState
-        - dealer : ParticipantState
-        - player : ParticipantState
-        - objects : List<SpecialObject>
+        - dealer : CharacterState
+        - player : CharacterState
+        - playerTurn : boolean
+        - winner : Winner
     }
 
     class Beer {
@@ -121,7 +128,7 @@ package "Controller" {
 
     class Action {
         + type : ActionType
-        + object : SpecialObject
+        + item : ItemType
     }
 
     enum ActionType {
@@ -137,7 +144,7 @@ package "Controller" {
         + onActionChosen(Action) : void
     }
     Controller ..|> InputHandler : implements
-    Action *-- ActionType
+    Action --> ActionType
 }
 
 package "View" {
@@ -165,19 +172,54 @@ package "View" {
     SwingView --> InputHandler : uses
 }
 
-ModelImpl *-- Participant : contains 2
-SpecialObject *-- AbstractParticipant : owns multiple
-LivesManager *-- AbstractParticipant
+ModelImpl *-- "2" Character : contains
+AbstractCharacter *-- "0..*" SpecialItem : inventory
+AbstractCharacter *-- LivesManager
 Controller --> Model : controls
 Controller --> View : updates
-Shotgun *-down- ModelImpl : contains
-AIStrategy *-- ModelImpl : contains
-TurnManager *-- ModelImpl : contains
-Beer ..|> SpecialObject
-Handcuffs ..|> SpecialObject
-Cigarette ..|> SpecialObject
-MagnifyingGlass ..|> SpecialObject
-Saw ..|> SpecialObject
+ModelImpl *-- Shotgun : contains
+ModelImpl *-- AIStrategy : contains
+ModelImpl *-- TurnManager : contains
+Beer ..|> SpecialItem
+Handcuffs ..|> SpecialItem
+Cigarette ..|> SpecialItem
+MagnifyingGlass ..|> SpecialItem
+Saw ..|> SpecialItem
 BasicStrategy ..|> AIStrategy
 
+class ShotgunImpl
+ShotgunImpl ..|> Shotgun
+class ShotResult {
+    + live : boolean
+    + damage : int
+}
+class CharacterState {
+    + lives : int
+    + maxLives : int
+    + items : List<ItemType>
+    + restrained : boolean
+}
+class ShotgunState {
+    + liveShells : int
+    + blankShells : int
+    + sawed : boolean
+}
+enum Target {
+    SELF
+    OPPONENT
+}
+enum Winner {
+    NONE
+    PLAYER
+    DEALER
+}
+enum ItemType {
+    BEER
+    CIGARETTE
+    SAW
+    HANDCUFFS
+    MAGNIFYING_GLASS
+}
+GameState *-- CharacterState
+GameState *-- ShotgunState
 @enduml

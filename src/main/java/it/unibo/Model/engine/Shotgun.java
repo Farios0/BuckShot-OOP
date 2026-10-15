@@ -1,23 +1,16 @@
 package it.unibo.Model.engine;
 
+import it.unibo.Model.State.ShotgunState;
+
 public interface Shotgun {
-
     int getDamage();
-
     boolean isBulletAlive();
-
-    boolean shoot();
-
+    ShotResult shoot();
     int howManyRemaining();
-
     void skip();
-
     void cut();
-
-    boolean isCutted();
-
+    boolean isSawed();
     boolean isEmpty();
-
     void recharge();
-
+    ShotgunState getState();
 }
