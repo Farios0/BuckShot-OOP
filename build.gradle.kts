@@ -13,10 +13,17 @@ plugins {
      */
     id("com.gradleup.shadow") version "9.3.1"
     id("org.danilopianini.gradle-java-qa") version "1.164.0"
+
+    id ("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 repositories { // Where to search for dependencies
     mavenCentral()
+}
+
+javafx {
+    version = "25"
+    modules("javafx.controls", "javafx.fxml", "javafx.graphics")
 }
 
 dependencies {
@@ -45,7 +52,10 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("it.unibo.sampleapp.RateAMovie")
+    mainClass.set("it.unibo.BuckshotApplication")
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics"
+    )
 }
 
 tasks.withType<Test>().configureEach {

@@ -1,14 +1,22 @@
 package it.unibo.Model;
 
-import java.util.List;
-
+import java.util.Objects;
 import it.unibo.Model.State.CharacterState;
 import it.unibo.Model.State.ShotgunState;
-import it.unibo.Model.items.SpecialItem;
 
-public class GameState {
-    private ShotgunState shotgun;
-    private CharacterState dealer;
-    private CharacterState player;
-    private List<SpecialItem> items;
+/** Immutable snapshot suitable for views and AI decisions. */
+public record GameState(ShotgunState shotgun, CharacterState dealer, CharacterState player,
+        boolean playerTurn, Winner winner) {
+    public enum Winner { NONE, PLAYER, DEALER }
+
+    public GameState {
+        Objects.requireNonNull(shotgun);
+        Objects.requireNonNull(dealer);
+        Objects.requireNonNull(player);
+        Objects.requireNonNull(winner);
+    }
+
+    public ShotgunState getShotgun() { return shotgun; }
+    public CharacterState getDealer() { return dealer; }
+    public CharacterState getPlayer() { return player; }
 }

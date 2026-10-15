@@ -2,6 +2,7 @@
     "java.compile.nullAnalysis.mode": "automatic",
     "[latex]": {
         "editor.wordWrap": "on"
-    }
+    },
+    "java.configuration.updateBuildConfiguration": "automatic"
 
 }

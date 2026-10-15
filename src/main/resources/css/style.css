@@ -1,0 +1,10 @@
+.button{
+    -fx-background-color: blue;
+    -fx-font-family: 'Courier New', Courier, monospace;
+    -fx-border-radius: 50px;
+    -fx-min-width: 150;
+}
+
+.dealer {
+    -fx-border-radius: 30px;
+}

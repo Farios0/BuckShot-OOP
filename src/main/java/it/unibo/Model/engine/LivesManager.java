@@ -2,30 +2,36 @@ package it.unibo.Model.engine;
 
 public class LivesManager {
     private final int maxLives;
-    private final int initialLives;
     private int currentLives;
 
-    LivesManager(int max, int initial) {
+    public LivesManager(final int max, final int initial) {
+        if (max <= 0 || initial <= 0 || initial > max) {
+            throw new IllegalArgumentException("Invalid initial lives");
+        }
         maxLives = max;
-        initialLives = initial;
-        currentLives = initialLives;
+        currentLives = initial;
     }
 
     public boolean noLivesRemaining() {
-        return currentLives <= 0;
+        return currentLives == 0;
     }
 
     public void heal() {
-        if (currentLives + 1 <= maxLives) {
-            currentLives++;
-        }
+        currentLives = Math.min(maxLives, currentLives + 1);
     }
 
-    public void takeDamage(boolean shotgunIsCutted) {
-        if (shotgunIsCutted) {
-            currentLives -= 2;
-        } else {
-            currentLives--;
+    public void takeDamage(final int damage) {
+        if (damage < 0) {
+            throw new IllegalArgumentException("Damage cannot be negative");
         }
+        currentLives = Math.max(0, currentLives - damage);
+    }
+
+    public int getCurrentLives() {
+        return currentLives;
+    }
+
+    public int getMaxLives() {
+        return maxLives;
     }
 }
