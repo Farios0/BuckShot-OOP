@@ -1,10 +1,35 @@
-.button{
-    -fx-background-color: blue;
-    -fx-font-family: 'Courier New', Courier, monospace;
-    -fx-border-radius: 50px;
-    -fx-min-width: 150;
+.inventory-panel {
+    -fx-background-color: rgba(15, 17, 20, 0.9);
+    -fx-background-radius: 12;
+    -fx-border-color: #85746d;
+    -fx-border-radius: 12;
+    -fx-padding: 14;
 }
-
-.dealer {
-    -fx-border-radius: 30px;
+.inventory-title {
+    -fx-text-fill: #e6d4bb;
+    -fx-font-family: monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
 }
+.inventory-message {
+    -fx-text-fill: #c8c4be;
+    -fx-font-size: 15px;
+}
+.inventory-scroll, .inventory-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.inventory-item, .dealer-item {
+    -fx-background-color: #352b27;
+    -fx-background-radius: 6;
+    -fx-text-fill: #f3e8d5;
+    -fx-padding: 12 18;
+    -fx-font-size: 17px;
+}
+.inventory-item {
+    -fx-min-width: 135;
+    -fx-cursor: hand;
+}
+.inventory-item:hover { -fx-background-color: #635043; }
+.inventory-item:focused { -fx-border-color: #e6d4bb; -fx-border-radius: 6; }
+.inventory-item:disabled { -fx-opacity: 0.45; }
+.dealer-item { -fx-font-size: 15px; }
