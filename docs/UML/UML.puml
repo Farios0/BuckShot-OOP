@@ -141,6 +141,7 @@ package "Controller" {
         - view : View
         - model : Model
         + start() : void
+        + stop() : void
         + onActionChosen(Action) : void
     }
     Controller ..|> InputHandler : implements
@@ -150,26 +151,23 @@ package "Controller" {
 package "View" {
 
     interface View {
+        + setInputHandler(InputHandler) : void
         + display(GameState) : void
-        + showGameOver(winner : String) : void
+        + showMessage(message : String) : void
+        + showGameOver(winner : Winner) : void
         + showError(message : String) : void
+        + scheduleDealerAction(Runnable) : void
+        + cancelPendingActions() : void
     }
 
-    class ConsoleView {
+    class JavaFXView {
         - inputHandler : InputHandler
-        - scanner : Scanner
-        + run() : void
+        + getRoot() : Parent
     }
 
-    class SwingView {
-        - inputHandler : InputHandler
-        + initComponents() : void
-    }
+    JavaFXView ..|> View : implements
+    JavaFXView --> InputHandler : sends actions
 
-    ConsoleView ..|> View : implements
-    SwingView ..|> View : implements
-    ConsoleView --> InputHandler : uses
-    SwingView --> InputHandler : uses
 }
 
 ModelImpl *-- "2" Character : contains
