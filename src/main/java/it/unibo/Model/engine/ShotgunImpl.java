@@ -8,7 +8,7 @@ import java.util.Random;
 import it.unibo.Model.State.ShotgunState;
 
 public class ShotgunImpl implements Shotgun {
-    private final Queue<Boolean> bullets = new ArrayDeque<>();
+    private final Queue<Shell> shells = new ArrayDeque<>();
     private final Random random;
     private boolean sawed;
 
@@ -22,43 +22,44 @@ public class ShotgunImpl implements Shotgun {
     }
 
     /** Creates a known load, useful for deterministic games and tests. */
-    public ShotgunImpl(final List<Boolean> load) {
+    public ShotgunImpl(final List<Shell> load) {
         random = new Random();
-        bullets.addAll(List.copyOf(load));
+        shells.addAll(List.copyOf(load));
     }
 
     @Override
     public int getDamage() {
-        return isBulletAlive() ? (sawed ? 2 : 1) : 0;
+        return peekNextShell().isLive() ? (sawed ? 2 : 1) : 0;
     }
 
     @Override
-    public boolean isBulletAlive() {
+    public Shell peekNextShell() {
         if (isEmpty()) {
             throw new IllegalStateException("The shotgun is empty");
         }
-        return bullets.element();
+        return shells.element();
     }
 
     @Override
     public ShotResult shoot() {
-        final ShotResult result = new ShotResult(isBulletAlive(), getDamage());
-        bullets.remove();
+        final Shell shell = peekNextShell();
+        final ShotResult result = new ShotResult(shell, getDamage());
+        shells.remove();
         sawed = false;
         return result;
     }
 
     @Override
     public int howManyRemaining() {
-        return bullets.size();
+        return shells.size();
     }
 
     @Override
-    public void skip() {
+    public Shell eject() {
         if (isEmpty()) {
             throw new IllegalStateException("The shotgun is empty");
         }
-        bullets.remove();
+        return shells.remove();
     }
 
     @Override
@@ -73,7 +74,7 @@ public class ShotgunImpl implements Shotgun {
 
     @Override
     public boolean isEmpty() {
-        return bullets.isEmpty();
+        return shells.isEmpty();
     }
 
     /** Reloading is allowed only after all shells have been removed. */
@@ -83,14 +84,14 @@ public class ShotgunImpl implements Shotgun {
             throw new IllegalStateException("Cannot reload a loaded shotgun");
         }
         for (int i = 0; i < 6; i++) {
-            bullets.add(random.nextBoolean());
+            shells.add(random.nextBoolean() ? Shell.LIVE : Shell.BLANK);
         }
         sawed = false;
     }
 
     @Override
     public ShotgunState getState() {
-        final int live = (int) bullets.stream().filter(Boolean::booleanValue).count();
-        return new ShotgunState(live, bullets.size() - live, sawed);
+        final int live = (int) shells.stream().filter(Shell::isLive).count();
+        return new ShotgunState(live, shells.size() - live, sawed);
     }
 }

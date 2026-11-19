@@ -4,10 +4,10 @@ import it.unibo.Model.State.ShotgunState;
 
 public interface Shotgun {
     int getDamage();
-    boolean isBulletAlive();
+    Shell peekNextShell();
     ShotResult shoot();
     int howManyRemaining();
-    void skip();
+    Shell eject();
     void cut();
     boolean isSawed();
     boolean isEmpty();
