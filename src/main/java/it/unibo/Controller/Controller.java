@@ -3,6 +3,9 @@ package it.unibo.Controller;
 import java.util.Objects;
 import it.unibo.Model.GameState;
 import it.unibo.Model.Model;
+import it.unibo.Model.ShotOutcome;
+import it.unibo.Model.engine.Shell;
+import it.unibo.Model.items.ItemResult;
 import it.unibo.Model.items.ItemType;
 import it.unibo.View.View;
 
@@ -42,8 +45,8 @@ public final class Controller implements InputHandler {
         }
         try {
             switch (action.type()) {
-                case SHOOT_SELF -> reportShot("Hai sparato a te stesso", model.shoot(Model.Target.SELF));
-                case SHOOT_OPPONENT -> reportShot("Hai sparato al dealer", model.shoot(Model.Target.OPPONENT));
+                case SHOOT_SELF -> reportShot(true, model.shoot(Model.Target.SELF));
+                case SHOOT_OPPONENT -> reportShot(true, model.shoot(Model.Target.OPPONENT));
                 case USE_OBJECT -> useItem(action.item());
             }
         } catch (IllegalArgumentException | IllegalStateException exception) {
@@ -53,18 +56,31 @@ public final class Controller implements InputHandler {
     }
 
     private void useItem(final ItemType item) {
-        if (!model.utilizeObject(item)) {
-            view.showError("Questo oggetto non può essere usato adesso.");
-        } else if (item == ItemType.MAGNIFYING_GLASS) {
-            view.showMessage(model.inspectNextShell()
-                ? "Prossima cartuccia: carica." : "Prossima cartuccia: a salve.");
-        } else {
-            view.showMessage("Oggetto utilizzato.");
+        switch (model.utilizeObject(item)) {
+            case ItemResult.NotUsable() -> view.showError("Questo oggetto non può essere usato adesso.");
+            case ItemResult.ShellInspected(final Shell shell) ->
+                view.showMessage("Prossima cartuccia: " + shellLabel(shell) + ".");
+            case ItemResult.ShellEjected(final Shell shell) ->
+                view.showMessage("Cartuccia espulsa: " + shellLabel(shell) + ".");
+            case ItemResult.Healed() -> view.showMessage("Hai recuperato una vita.");
+            case ItemResult.ShotgunSawed() -> view.showMessage("Canna segata: il prossimo colpo fa danno doppio.");
+            case ItemResult.OpponentRestrained() -> view.showMessage("Avversario ammanettato.");
         }
     }
 
-    private void reportShot(final String subject, final int damage) {
-        view.showMessage(subject + (damage == 0 ? ": cartuccia a salve." : ": danno " + damage + "."));
+    private static String shellLabel(final Shell shell) {
+        return shell.isLive() ? "carica" : "a salve";
+    }
+
+    private void reportShot(final boolean playerActed, final ShotOutcome outcome) {
+        final String subject = playerActed
+            ? (outcome.target() == Model.Target.SELF ? "Hai sparato a te stesso" : "Hai sparato al dealer")
+            : (outcome.target() == Model.Target.SELF ? "Il dealer ha sparato a sé stesso" : "Il dealer ti ha sparato");
+        final String impact = outcome.isLive()
+            ? ": danno " + outcome.damage() + "."
+            : ": cartuccia a salve.";
+        final String reloadNote = outcome.reloaded() ? " Fucile ricaricato e nuovi oggetti distribuiti." : "";
+        view.showMessage(subject + impact + reloadNote);
     }
 
     private void refresh() {
@@ -84,7 +100,7 @@ public final class Controller implements InputHandler {
         dealerPending = false;
         if (!model.gameIsOver() && !model.isPlayerTurn()) {
             try {
-                reportShot("Il dealer ha sparato", model.playDealerTurn());
+                reportShot(false, model.playDealerTurn());
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 stop();
                 view.showError("Turno del dealer interrotto: " + exception.getMessage());

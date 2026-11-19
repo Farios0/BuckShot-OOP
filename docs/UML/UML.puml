@@ -13,43 +13,41 @@ hide empty members
 package "Model Layer" {
 
     interface Model {
-        + shoot(target : Target) : int
+        + shoot(target : Target) : ShotOutcome
         + gameIsOver() : boolean
-        + utilizeObject(ItemType) : boolean
+        + utilizeObject(ItemType) : ItemResult
         + isPlayerTurn() : boolean
         + getGameData() : GameState
-        + distributeObjects() : void
-        + inspectNextShell() : boolean
-        + playDealerTurn() : int
+        + playDealerTurn() : ShotOutcome
     }
 
     class ModelImpl {
-        - dealer : Character
-        - player : Character
+        - dealer : Participant
+        - player : Participant
         - strategy : AIStrategy
         - shotgun : Shotgun
         - turnManager : TurnManager
-        + distributeObjects() : void
-        + playDealerTurn() : int
-        + inspectNextShell() : boolean
+        + playDealerTurn() : ShotOutcome
     }
     ModelImpl ..|> Model : implements
 
-    interface Character {
+    interface Participant {
         + addObjects(List<SpecialItem>) : void
-        + useObject(SpecialItem, opponent : Character, Shotgun) : boolean
-        + shoot(Shotgun, target : Character) : ShotResult
+        + useObject(ItemType, opponent : Participant, Shotgun) : ItemResult
+        + shoot(Shotgun, target : Participant) : ShotResult
         + heal() : void
         + takeDamage(damage : int) : void
         + restrain() : void
         + consumeRestraint() : boolean
-        + getState() : CharacterState
+        + isRestrained() : boolean
         + isDead() : boolean
+        + getState() : CharacterState
     }
 
-    abstract class AbstractCharacter {
+    class ParticipantImpl {
         - items : List<SpecialItem>
         - lives : LivesManager
+        - restrained : boolean
     }
 
     class TurnManager {
@@ -57,15 +55,11 @@ package "Model Layer" {
         + isPlayerTurn() : boolean
     }
 
-    class Participant {
-    }
-
-    AbstractCharacter <|-- Participant : extends
-    Character <|.. AbstractCharacter
+    ParticipantImpl ..|> Participant : implements
 
     interface SpecialItem {
         + getType() : ItemType
-        + use(user : Character, opponent : Character, Shotgun) : boolean
+        + use(user : Participant, opponent : Participant, Shotgun) : ItemResult
     }
 
     class LivesManager {
@@ -79,13 +73,13 @@ package "Model Layer" {
     interface Shotgun {
         + isEmpty() : boolean
         + recharge() : void
-        + isBulletAlive() : boolean
+        + peekNextShell() : Shell
         + shoot() : ShotResult
         + cut() : void
         + isSawed() : boolean
         + getDamage() : int
         + howManyRemaining() : int
-        + skip() : void
+        + eject() : Shell
         + getState() : ShotgunState
     }
 
@@ -170,9 +164,9 @@ package "View" {
 
 }
 
-ModelImpl *-- "2" Character : contains
-AbstractCharacter *-- "0..*" SpecialItem : inventory
-AbstractCharacter *-- LivesManager
+ModelImpl *-- "2" Participant : contains
+ParticipantImpl *-- "0..8" SpecialItem : inventory
+ParticipantImpl *-- LivesManager
 Controller --> Model : controls
 Controller --> View : updates
 ModelImpl *-- Shotgun : contains
@@ -188,9 +182,34 @@ BasicStrategy ..|> AIStrategy
 class ShotgunImpl
 ShotgunImpl ..|> Shotgun
 class ShotResult {
-    + live : boolean
+    + shell : Shell
     + damage : int
 }
+class ShotOutcome {
+    + target : Target
+    + shot : ShotResult
+    + reloaded : boolean
+}
+ShotOutcome *-- ShotResult
+ShotOutcome --> Target
+Model ..> ShotOutcome
+enum Shell {
+    LIVE
+    BLANK
+}
+interface ItemResult <<sealed>> {
+    + isApplied() : boolean
+    --
+    + NotUsable()
+    + Healed()
+    + ShotgunSawed()
+    + OpponentRestrained()
+    + ShellInspected(shell : Shell)
+    + ShellEjected(shell : Shell)
+}
+SpecialItem ..> ItemResult
+Shotgun ..> Shell
+ItemResult ..> Shell
 class CharacterState {
     + lives : int
     + maxLives : int

@@ -1,16 +1,17 @@
 package it.unibo.Model.items;
 
 import it.unibo.Model.engine.Shotgun;
-import it.unibo.Model.entities.Character;
+import it.unibo.Model.entities.Participant;
 
 public final class MagnifyingGlass implements SpecialItem {
     @Override
     public ItemType getType() { return ItemType.MAGNIFYING_GLASS; }
 
     @Override
-    public boolean use(final Character user, final Character opponent, final Shotgun shotgun) {
-        if (shotgun.isEmpty()) { return false; }
-        // The model records the revealed shell for the acting participant.
-        return true;
+    public ItemResult use(final Participant user, final Participant opponent, final Shotgun shotgun) {
+        if (shotgun.isEmpty()) {
+            return new ItemResult.NotUsable();
+        }
+        return new ItemResult.ShellInspected(shotgun.peekNextShell());
     }
 }
